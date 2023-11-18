@@ -1,0 +1,9 @@
+-- This value is the default parent dir we'll search for dependencies in, defaults to the parent of your working dir
+PARENT_DIR==$HOME/Origin
+
+-- This list contains dependencies that we'll search for in the parent dir by name.
+vpp_lib_utils
+test_lib
+
+-- You can override the path of dependency as follows.
+test_lib_override==$HOME/Origin/test_lib_override
