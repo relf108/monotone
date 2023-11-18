@@ -1,22 +1,38 @@
-from pathlib import Path
 import glob
+from pathlib import Path
+
+from colour import err, warn
+from dependency import Dependency
 
 
 class DependencyFactory:
     def __init__(self):
-        self._dependency_paths = self._init_dependency_paths()
+        self.parent_dir, self._dependency_map = self._init_dependency_map()
 
-    def _init_dependency_paths(self) -> dict[str, Path]:
+    def names(self) -> list[str]:
+        """Return a list of dependency names"""
+        return list(self._dependency_map.keys())
+
+    def map(self) -> dict[str, Dependency]:
+        """Return a list of dependency names"""
+        return self._dependency_map
+
+    def get(self, dependency_name: str) -> Dependency:
+        """Return a Dependency object"""
+        return self._dependency_map[dependency_name]
+
+    def _init_dependency_map(self) -> tuple[Path, dict[str, Dependency]]:
         """Read monotone_deps.txt and return a dictionary of dependency names to paths."""
 
-        deps = Path(f"{Path.cwd()}/monotone_deps.txt")
-        if not Path.exists(deps):
-            raise FileNotFoundError(f"Could not find monotone_deps.txt at {deps}")
+        mono_deps = Path(f"{Path.cwd()}/monotone_deps.txt")
+        if not Path.exists(mono_deps):
+            err(f"ERROR: Could not find monotone_deps.txt at {mono_deps}")
+            exit(1)
 
-        parent_dir: Path = deps.parent
-        dependency_paths: dict[str, Path] = {}
+        parent_dir: Path = mono_deps.parent
+        dependency_map: dict[str, Dependency] = {}
 
-        with open(deps, "r") as f:
+        with open(mono_deps, "r") as f:
             lines = f.readlines()
             for line in lines:
                 line = line.strip()
@@ -35,17 +51,19 @@ class DependencyFactory:
                         parent_dir = Path(path)
                         continue
 
-                    dependency_paths[split[0]] = Path(path)
+                    dependency_map[split[0]] = Dependency(Path(path))
                     continue
 
-                dependency_paths[line] = Path(parent_dir)
+                dependency_map[line] = Dependency(Path(parent_dir))
 
-        for g_path in glob.glob(f"{parent_dir}/**/*.egg-info"):
-            g_path = Path(g_path)
-
-            if g_path.name.split(".")[0] not in dependency_paths.keys():
+        for lib_name in [k for k, v in dependency_map.items() if v.path == parent_dir]:
+            try:
+                dependency_map[lib_name] = Dependency(
+                    Path(glob.glob(f"{parent_dir}/**/{lib_name}.egg-info")[0])
+                )
+            except IndexError:
+                dependency_map.pop(lib_name)
+                warn(f"WARNING: Could not find {lib_name} in {parent_dir}")
                 continue
 
-            dependency_paths[g_path.name] = g_path.parent
-
-        return dependency_paths
+        return parent_dir, dependency_map
