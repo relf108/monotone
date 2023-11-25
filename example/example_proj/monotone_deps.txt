@@ -1,0 +1,6 @@
+-- This value is the default parent dir we'll search for dependencies in, defaults to the parent of your working dir
+PARENT_DIR==$HOME/Projects/monotone/example
+
+-- This list contains dependencies that we'll search for in the parent dir by name.
+example_lib
+
