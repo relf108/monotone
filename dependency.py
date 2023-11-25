@@ -11,6 +11,7 @@ class Dependency(ABC):
     def __init__(self, path: Path, name: str):
         self.name = name
         self.path = path
+        self.loaded = False
 
     @staticmethod
     @abstractmethod

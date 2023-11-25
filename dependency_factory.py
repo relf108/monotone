@@ -11,6 +11,7 @@ from langs.python import Python
 
 COMMENT_CHARS = tuple(["--", "#", "//"])
 
+
 class DependencyFactory:
     """Factory for creating Dependency objects"""
 
@@ -18,8 +19,10 @@ class DependencyFactory:
         self.parent_dir, self._dependency_map = self._init_dependency_map()
         self.lang: Lang = args.lang
 
-    def names(self) -> list[str]:
+    def names(self, loaded_only=False) -> list[str]:
         """Return a list of dependency names"""
+        if loaded_only:
+            return [k for k, v in self._dependency_map.items() if v.loaded]
         return list(self._dependency_map.keys())
 
     def deps(self) -> list[Dependency]:
@@ -46,8 +49,8 @@ class DependencyFactory:
         parent_dir: Path = mono_deps.parent
         dependency_map: dict[str, Dependency] = {}
 
-        with open(mono_deps, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+        with open(mono_deps, "r", encoding="utf-8") as mono_dep_file:
+            lines = mono_dep_file.readlines()
             for line in lines:
                 line = line.strip()
 
@@ -73,7 +76,7 @@ class DependencyFactory:
         names = [k for k, v in dependency_map.items() if v.path == parent_dir]
         for lib_name in names:
             try:
-                egg_path = glob.glob(f"{parent_dir}/**/{lib_name}.egg-info")
+                egg_path = glob.glob(f"{parent_dir}/**/{lib_name}.egg*")
                 parent = Path(egg_path[0]).parent
                 dependency_map[lib_name] = Python(
                     parent,

@@ -1,23 +1,18 @@
 """ Main entry point for the program. """
-from time import perf_counter
 
-from colour import ok
+from colour import ok, warn
 from dependency_factory import DependencyFactory
 
-
-def main():
-    """Main entry point for the program."""
-
+if __name__ == "__main__":
     dep_factory = DependencyFactory()
 
     for dep in dep_factory.deps():
         dep.load()
 
-    ok(dep_factory.names())
+    loaded = dep_factory.names(loaded_only=True)
+    failed = list(set(dep_factory.names()) ^ set(loaded))
 
+    if len(failed) > 0:
+        warn(f"Failed to install: {', '.join(failed)}")
 
-if __name__ == "__main__":
-    start = perf_counter()
-    main()
-    end = perf_counter()
-    ok(f"Program executed in {end - start} seconds.")
+    ok(f"Installed: {', '.join(loaded)}")

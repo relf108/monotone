@@ -19,5 +19,6 @@ class Python(Dependency):
         args = ["pip", "install", "-e", str(self.path)]
         try:
             subprocess.run(args, check=True)
+            self.loaded = True
         except subprocess.CalledProcessError:
             print(f"ERROR: Could not install local lib at path: {self.path}")
