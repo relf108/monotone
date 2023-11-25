@@ -5,5 +5,5 @@ PARENT_DIR==$HOME/Origin
 vpp_lib_utils
 test_lib
 
-# You can override the path of dependency as follows.
+-- You can override the path of dependency as follows.
 test_lib_override==$HOME/Origin/test_lib_override
