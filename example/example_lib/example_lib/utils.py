@@ -2,4 +2,7 @@
 
 
 def hello_lib():
+    print("Hello from example_proj!")
     print("Hello from example_lib!")
+    print("Hello from example_lib again!")
+    print("Hello from example_lib again again!")

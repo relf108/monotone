@@ -1,4 +1,4 @@
-""" Main entry point for the program. """
+"""Main entry point for the program."""
 
 from colour import ok, warn
 from dependency_factory import DependencyFactory
@@ -13,6 +13,7 @@ if __name__ == "__main__":
     failed = list(set(dep_factory.names()) ^ set(loaded))
 
     if len(failed) > 0:
-        warn(f"Failed to install: {', '.join(failed)}")
+        f_msg = ", ".join(failed)
+        warn(f"Failed to install: {f_msg}")
 
     ok(f"Installed: {', '.join(loaded)}")

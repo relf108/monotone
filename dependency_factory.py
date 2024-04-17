@@ -1,46 +1,70 @@
-"""Factory for creating Dependency objects"""
+"""Factory for creating Dependency objects."""
+from __future__ import annotations
 
-import glob
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from args import Lang, args
 from colour import err, warn
-from dependency import Dependency
 from langs.python import Python
 
-COMMENT_CHARS = tuple(["--", "#", "//"])
+if TYPE_CHECKING:
+    from dependency import Dependency
+
+COMMENT_CHARS = ("--", "#", "//")
 
 
 class DependencyFactory:
-    """Factory for creating Dependency objects"""
+    """Factory for creating Dependency objects."""
 
-    def __init__(self):
+    def __init__(self: DependencyFactory) -> None:
+        """Initialize the DependencyFactory."""
         self.parent_dir, self._dependency_map = self._init_dependency_map()
         self.lang: Lang = args.lang
 
-    def names(self, loaded_only=False) -> list[str]:
-        """Return a list of dependency names"""
+    def names(self: DependencyFactory, loaded_only: False) -> list[str]:
+        """Return a list of dependency names."""
         if loaded_only:
             return [k for k, v in self._dependency_map.items() if v.loaded]
         return list(self._dependency_map.keys())
 
-    def deps(self) -> list[Dependency]:
-        """Return a list of dependency names"""
+    def deps(self: DependencyFactory) -> list[Dependency]:
+        """Return a list of dependency names."""
         return list(self._dependency_map.values())
 
-    def map(self) -> dict[str, Dependency]:
-        """Return a list of dependency names"""
+    def map(self: DependencyFactory) -> dict[str, Dependency]:
+        """Return a list of dependency names."""
         return self._dependency_map
 
-    def get(self, dependency_name: str) -> Dependency:
-        """Return a Dependency object"""
+    def get(self: DependencyFactory, dependency_name: str) -> Dependency:
+        """Return a Dependency object."""
         return self._dependency_map[dependency_name]
 
-    def _init_dependency_map(self) -> tuple[Path, dict[str, Dependency]]:
-        """Read monotone_deps.txt and return a dictionary\
-        of dependency names to paths."""
+    def populate_dependency_map(
+        self: DependencyFactory,
+        parent_dir: Path,
+        lib_name: str,
+        dependency_map: dict[str, Dependency],
+    ) -> Path:
+        """Populate the dependency map with the given library name."""
+        try:
+            egg_path = yield parent_dir.rglob(f"{lib_name}.egg*")
+            parent = Path(egg_path[0]).parent
+            dependency_map[lib_name] = Python(
+                parent,
+                lib_name,
+            )
+        except IndexError:
+            dependency_map.pop(lib_name)
+            warn(f"warning: could not find {lib_name} in {parent_dir}")
 
+        return parent
+
+    def _init_dependency_map(
+        self: DependencyFactory,
+    ) -> tuple[Path, dict[str, Dependency]]:
+        """Read monotone_deps.txt and return a dictionary of dependency names to paths."""
         mono_deps = Path(f"{Path.cwd()}/monotone_deps.txt")
         if not Path.exists(mono_deps):
             err(f"ERROR: Could not find monotone_deps.txt at {mono_deps}")
@@ -49,17 +73,15 @@ class DependencyFactory:
         parent_dir: Path = mono_deps.parent
         dependency_map: dict[str, Dependency] = {}
 
-        with open(mono_deps, "r", encoding="utf-8") as mono_dep_file:
+        with Path.open(mono_deps, encoding="utf-8") as mono_dep_file:
             lines = mono_dep_file.readlines()
-            for line in lines:
-                line = line.strip()
-
+            for line in [x.strip() for x in lines]:
                 if line.startswith(COMMENT_CHARS) or len(line) == 0:
                     continue
 
                 split = line.split("==")
 
-                if len(split) == 2:
+                if len(split) == len("=="):
                     path = split[1]
                     if "$HOME" in path:
                         path = path.replace("$HOME", str(Path.home()))
@@ -75,16 +97,10 @@ class DependencyFactory:
 
         names = [k for k, v in dependency_map.items() if v.path == parent_dir]
         for lib_name in names:
-            try:
-                egg_path = glob.glob(f"{parent_dir}/**/{lib_name}.egg*")
-                parent = Path(egg_path[0]).parent
-                dependency_map[lib_name] = Python(
-                    parent,
-                    lib_name,
-                )
-            except IndexError:
-                dependency_map.pop(lib_name)
-                warn(f"WARNING: Could not find {lib_name} in {parent_dir}")
-                continue
+            parent_dir = self.populate_dependency_map(
+                parent_dir,
+                lib_name,
+                dependency_map,
+            )
 
         return parent_dir, dependency_map

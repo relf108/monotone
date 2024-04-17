@@ -1,0 +1,19 @@
+astroid==3.0.1
+debugpy==1.8.0
+dill==0.3.7
+-e git+ssh://git@github.com/relf108/monotone.git@b9e365c9fcd314f3e0aaf0cbfc70580cd7578b6d#egg=example_lib&subdirectory=example/example_lib
+flake8==6.1.0
+greenlet==3.0.1
+isort==5.12.0
+mccabe==0.7.0
+msgpack==1.0.7
+neovim==0.3.1
+nodeenv==1.8.0
+pathlib==1.0.1
+platformdirs==4.0.0
+pycodestyle==2.11.1
+pyflakes==3.1.0
+pylint==3.0.2
+pynvim==0.4.3
+pyright==1.1.337
+tomlkit==0.12.3

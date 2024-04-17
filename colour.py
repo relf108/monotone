@@ -5,7 +5,7 @@ class Colour:
     ENDC = "\033[0m"
 
 
-def ok(text: str | list[str]):
+def ok(text):
     if isinstance(text, list):
         for line in text:
             print(f"{Colour.OKGREEN}{line}{Colour.ENDC}")
@@ -13,7 +13,7 @@ def ok(text: str | list[str]):
     print(f"{Colour.OKGREEN}{text}{Colour.ENDC}")
 
 
-def warn(text: str | list[str]):
+def warn(text):
     if isinstance(text, list):
         for line in text:
             print(f"{Colour.WARNING}{line}{Colour.ENDC}")
@@ -21,7 +21,7 @@ def warn(text: str | list[str]):
     print(f"{Colour.WARNING}{text}{Colour.ENDC}")
 
 
-def err(text: str | list[str]):
+def err(text):
     if isinstance(text, list):
         for line in text:
             print(f"{Colour.FAIL}{line}{Colour.ENDC}")
